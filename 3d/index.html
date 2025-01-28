@@ -1,1 +1,887 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>3D!</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+    
+  </head>
+  <body>
+    <div id="thing"></div>
+    <!--<div id="playerDiv" style="">ggg</div>-->
+    <input type="range" id="fov" min="60" max="100">
+    <script src="https://tuckerr.ddsites.net/game.js"></script>
+    
+    <script>
+      let draw = Draw;
+      let input = Input;
+      
+      //Draw.setup();
+      Input.setupInputDetection();
+      Input.enablePointerLock();
+      GpuDraw.setup();
+    
+      let fovIn = 100;
+      /*fovIn /= 2;
+      fovIn *= Math.PI/180;
+      fovIn = Math.tan(fovIn);*/
+      
+      function fovCalc(fov){
+        let fovIn = fov;
+        fovIn /= 2;
+        fovIn *= Math.PI/180;
+        fovIn = Math.tan(fovIn);
+        
+        return(window.innerWidth/(2*fovIn));
+      }
+      
+      let fov = fovCalc(fovIn);
+      
+      //draw.line(0,0,100,100,"red","10");
+      //document.body.innerHTML += Draw.canvas;
+      //document.body.innerHTML += Draw.can;
+      //var declaration
+      /*var player = {
+        x:0,
+        y:0,
+        z:0,
+        id:document.getElementById("playerDiv")
+      };*/
+      
+      
+      let player = new Vector3(0,0,0);
+      
+      const time = new Date();
+      time.deltaTime = 1;
+      time.last = time.getTime();
+      
+      //const points = [];
+      //const proPoints = [];
+      
+      /*points[0] = new Vector3(100,100,100);
+      points[1] = new Vector3(-100,100,100);
+      points[2] = new Vector3(100,-100,100);
+      points[3] = new Vector3(-100,-100,100);
+      points[4] = new Vector3(100,-100,-100);
+      points[5] = new Vector3(-100,-100,-100);
+      */
+      const triangles = [];
+      
+      triangles[0] = new Triangle(
+      	new Vector3(0,0,100),
+      	new Vector3(100,0,100),
+      	new Vector3(0,100,100),
+      	"red"
+      );/*
+      triangles[1] = new Triangle(
+      	new Vector3(100,100,100),
+      	new Vector3(100,0,100),
+      	new Vector3(0,100,100),
+      	"darkred"
+      );
+      triangles[2] = new Triangle(
+      	new Vector3(0,0,100),
+      	new Vector3(100,0,100),
+      	new Vector3(0,0,1),
+      	"blue"
+      );
+      triangles[3] = new Triangle(
+      	new Vector3(100,0,1),
+      	new Vector3(100,0,100),
+      	new Vector3(0,0,1),
+      	"darkblue"
+      );
+      triangles[4] = new Triangle(
+      	new Vector3(100,0,100),
+      	new Vector3(200,0,100),
+      	new Vector3(100,100,100),
+      	"red"
+      );
+      triangles[5] = new Triangle(
+      	new Vector3(200,100,100),
+      	new Vector3(200,0,100),
+      	new Vector3(100,100,100),
+      	"darkred"
+      );
+      triangles[6] = new Triangle(
+      	new Vector3(0,100,100),
+      	new Vector3(100,100,100),
+      	new Vector3(0,200,100),
+      	"red"
+      );
+      triangles[7] = new Triangle(
+      	new Vector3(100,200,100),
+      	new Vector3(100,100,100),
+      	new Vector3(0,200,100),
+      	"darkred"
+      );
+      triangles[8] = new Triangle(
+      	new Vector3(100,100,100),
+      	new Vector3(200,100,100),
+      	new Vector3(100,200,100),
+      	"red"
+      );
+      triangles[9] = new Triangle(
+      	new Vector3(200,200,100),
+      	new Vector3(200,100,100),
+      	new Vector3(100,200,100),
+      	"darkred"
+      );
+      triangles[10] = new Triangle(
+      	new Vector3(400,0,100),
+      	new Vector3(800,0,100),
+      	new Vector3(400,400,100),
+      	"red"
+      );
+      triangles[11] = new Triangle(
+      	new Vector3(800,400,100),
+      	new Vector3(800,0,100),
+      	new Vector3(400,400,100),
+      	"darkred"
+      );
+      triangles[12] = new Triangle(
+      	new Vector3(400,0,100),
+      	new Vector3(800,0,100),
+      	new Vector3(400,0,-300),
+      	"blue"
+      );
+      triangles[13] = new Triangle(
+      	new Vector3(800,0,-300),
+      	new Vector3(800,0,100),
+      	new Vector3(400,0,-300),
+      	"darkblue"
+      );
+      triangles[14] = new Triangle(
+      	new Vector3(100,0,100),
+      	new Vector3(200,0,100),
+      	new Vector3(100,0,0),
+      	"blue"
+      );
+      triangles[15] = new Triangle(
+      	new Vector3(200,0,0),
+      	new Vector3(200,0,100),
+      	new Vector3(100,0,0),
+      	"darkblue"
+      );
+      triangles[16] = new Triangle(
+      	new Vector3(200,0,100),
+      	new Vector3(300,0,100),
+      	new Vector3(200,0,-1),
+      	"blue"
+      );
+      triangles[17] = new Triangle(
+      	new Vector3(300,0,-1),
+      	new Vector3(300,0,100),
+      	new Vector3(200,0,-1),
+      	"darkblue"
+      );
+      triangles[18] = new Triangle(
+      	new Vector3(400,0,-300),
+      	new Vector3(800,0,-300),
+      	new Vector3(400,400,-300),
+      	"green"
+      );
+      triangles[19] = new Triangle(
+      	new Vector3(800,400,-300),
+      	new Vector3(800,0,-300),
+      	new Vector3(400,400,-300),
+      	"darkgreen"
+      );
+      triangles[20] = new Triangle(
+      	new Vector3(1200,0,100),
+      	new Vector3(800,0,-300),
+      	new Vector3(1200,400,100),
+      	"green"
+      );
+      triangles[21] = new Triangle(
+      	new Vector3(800,400,-300),
+      	new Vector3(800,0,-300),
+      	new Vector3(1200,400,100),
+      	"darkgreen"
+      );*/
+      
+      for (let i= -0;i<=0;i++){
+      	/*triangles.push(new Triangle(
+	      	new Vector3(-400,100,-(i*100)),
+	      	new Vector3(-400,0,-(i*100)),
+	      	new Vector3(-500,0,-(i*100)),
+	      	"darkgreen"
+	      ));
+	      
+	      triangles.push(new Triangle(
+	      	new Vector3(-400,100,-(i*100)),
+	      	new Vector3(-500,100,-(i*100)),
+	      	new Vector3(-500,0,-(i*100)),
+	      	"green"
+	      ));
+	      
+	      triangles.push(new Triangle(
+	      	new Vector3(-400,100,-(i*100)),
+	      	new Vector3(-400,0,-(i*100)),
+	      	new Vector3(-400,0,-((i+1)*100)),
+	      	"darkblue"
+	      ));
+	      
+	      triangles.push(new Triangle(
+	      	new Vector3(-400,100,-(i*100)),
+	      	new Vector3(-400,100,-((i+1)*100)),
+	      	new Vector3(-400,0,-((i+1)*100)),
+	      	"blue"
+	      ));*/
+	      const ii = i;
+	      triangles.push(new Triangle(
+	      	new Vector3(-1+ii,0,1),
+	      	new Vector3(0+ii,0,0),
+	      	new Vector3(0+ii,0,1),
 
+	      	"darkblue"
+	      ));
+	      triangles.push(new Triangle(
+	      	new Vector3(-1+ii,0,1),
+	      	new Vector3(-1+ii,0,0),
+	      	new Vector3(0+ii,0,0),
+	      	"blue"
+	      ));
+	      
+	      triangles.push(new Triangle(
+	      	new Vector3(-1+ii,0,0),
+	      	new Vector3(0+ii,0,-1),
+	      	new Vector3(0+ii,0,0),
+	      	"darkblue"
+	      ));
+	      triangles.push(new Triangle(
+	      	new Vector3(-1+ii,0,0),
+	      	new Vector3(-1+ii,0,-1),
+	      	new Vector3(0+ii,0,-1),
+	      	"blue"
+	      ));
+      }
+      
+      let rx = [];
+      let ry = [];
+      let rz = [];
+      
+      for(let i=0; i<60; i++){
+        
+        ry[i] = (Math.random()*10)-5;
+        rz[i] = (Math.random()*2)**7;
+        
+        rx[i] = ((Math.random()*2)-1)*rz[i]*2;
+      }
+      
+      let perlin = [];
+      
+      for(let i=-1000; i<1000; i++){
+      	
+      	perlin[i] = [];
+      	
+      	for(let ii=-1000; ii<1000; ii++){
+      		perlin[i][ii] = new Vector3(Math.random()*2 - 1, Math.random()*2 - 1, 0);
+      	}
+      }
+      
+      let scale = 1;
+      for(let x=-500/scale; x<500/scale; x++){
+      	if(true){
+      		
+	        for(let y=-500/scale; y<500/scale; y++){
+	        	if((y!=0&&y!=-1)||true){
+	        		
+	        		
+		          /*triangles.push(new Triangle(
+		            new Vector3(x*1,(x%y)*1,y*1),
+		            new Vector3((x+1)*1,((x+1)%(y))*1,y*1),
+		            new Vector3(x*1,((x)%(y+1))*1,(y+1)*1),
+		            "red"
+		          ));
+		          
+		          triangles.push(new Triangle(
+		            new Vector3((x+1)*1,((x+1)%(y+1))*1,(y+1)*1),
+		            new Vector3(x*1,((x)%(y+1))*1,(y+1)*1),
+		            new Vector3((x+1)*1,((x+1)%(y))*1,y*1),
+		            "darkred"
+		          ));*/
+		          
+		          triangles.push(new Triangle(
+		            new Vector3(x*scale, noise(x,y) ,y*scale),
+		            new Vector3((x+1)*scale, noise(x+1,y) ,y*scale),
+		            new Vector3(x*scale, noise(x,y+1) ,(y+1)*scale),
+		            "red"
+		          ));
+		          
+		          triangles.push(new Triangle(
+		            new Vector3((x+1)*scale, noise(x+1,y+1) ,(y+1)*scale),
+		            new Vector3(x*scale, noise(x,y+1) ,(y+1)*scale),
+		            new Vector3((x+1)*scale, noise(x+1,y) ,y*scale),
+		            "darkred"
+		          ));
+	          
+	        	}
+	        }
+	        
+	       
+      	}
+      }
+      
+      function noise(a,b){
+      	let out = 0;
+      	
+      	out += noise3(a,b);
+      	out += noise3(b/10,a/10)*10;
+      	out += noise3(b/5,a/-5)*5;
+      	out += noise3(a*5,b*5)/5;
+      	out += (noise3(a/20,b/-20)*20);
+      	out += (noise3(a/-50,b/50)*50);
+      	out += noise3(a*10,b*10)/10;
+      	
+      	return(out)
+      }
+      
+      function noise3(a,b){
+      	let out = 0;
+      	
+      	const n1 = noise2(a,b,-1,1);
+      	const n2 = noise2(a,b,1,1);
+      	const n3 = noise2(a,b,-1,-1);
+      	const n4 = noise2(a,b,1,-1);
+      	
+      	const i1 = interpalate(n1, n2, (a/10)- Math.floor(a/10));
+      	const i2 = interpalate(n3, n4, (a/10)- Math.floor(a/10));
+      	
+      	out = interpalate(i2, i1, (b/10)- Math.floor(b/10));
+      	
+      	return(out*10);
+      	
+      }
+      
+      function noise2(a,b,x,y){
+        let out = 0;
+        
+        /*for(let i=0; i<60; i++){
+          out += rx[i]*Math.sin((a+ry[i]) / rz[i]);
+          i++;
+          out += rx[i]*Math.sin((b+ry[i]) / rz[i]);
+        }*/
+        
+        let rx;
+        let ry;
+        
+        if(x == -1){
+        	rx = Math.floor(a/10);
+        } else {
+        	rx = Math.ceil(a/10);
+        }
+        if(y == -1){
+        	ry = Math.floor(b/10);
+        } else {
+        	ry = Math.ceil(b/10);
+        }
+        
+        const v = perlin[rx][ry];
+        
+        const pv = new Vector3( (a/10)-rx, (b/10)-ry, 0);
+        
+        out = (v.x*pv.x) + (v.y*pv.y);
+        
+        
+        return(out);
+      }
+      
+			function interpalate(a, b, x){
+				let out = 0;
+				
+				out += (Math.sin((x-0.5)*Math.PI)/2+0.5)*b;
+				
+				out += (Math.sin((x+0.5)*Math.PI)/2+0.5)*a;
+				
+				return(out);
+			}
+
+      
+
+      
+      for(let tri of triangles){
+        
+        const x = (300+(((tri.a.x+tri.b.x+tri.c.x)*(10/3))%300))%300;
+        //const y = (300+(((tri.a.y+tri.b.y+tri.c.y)/20)%300))%300;
+        //const y = (tri.a.y+tri.b.y+tri.c.y)/3;
+        const y = 0
+        const z = (300+(((tri.a.z+tri.b.z+tri.c.z)*(10/5))%300))%300;
+        
+        //const x = ((tri.a.x+tri.b.x+tri.c.x)/3)%300;
+        //const y = ((tri.a.y+tri.b.y+tri.c.y)/3)%300;
+        //const z = ((tri.a.z+tri.b.z+tri.c.z)/3)%300;
+        
+        const color = (x*1)+(z*1);
+        
+        /*tri.color = `rgb(
+          
+          ${bound((color)%300)},
+          ${bound((color+100)%300)},
+          ${bound((color+200)%300)}
+          )`;*/
+          
+          /*tri.color = [
+          	(bound((color)%300)/255) - (y/-1000),
+          	(bound((color+100)%300)/255) - (y/-1000),
+          	(bound((color+200)%300)/255) - (y/-1000),
+          	1
+          ];*/
+          tri.color = [
+          	0.0,
+          	1.0,
+          	0.0,
+          	1.0
+          ];
+      }
+      
+      function bound(n){
+        if(n>=200){
+          return((Math.abs(n-300))*((255)/100));
+          
+        } else if(n<=100){
+          return(n*(255/100));
+          
+        } else{
+          return(255);
+        }
+      }
+
+      const thing = document.getElementById("thing");
+      
+      const mat = new Matrix(3,3);
+       
+      thing.innerHTML += mat[0][0];
+      thing.innerHTML += mat[1][0];
+      thing.innerHTML += mat[2][0];
+      thing.innerHTML += mat[0][1];
+      thing.innerHTML += mat[1][1];
+      thing.innerHTML += mat[2][1];
+      thing.innerHTML += mat[0][2];
+      thing.innerHTML += mat[1][2];
+      thing.innerHTML += mat[2][2];
+      
+      //thing.innerHTML = "hi";
+
+      
+      //Draw.triangle(0,0,player.x,player.y,Input.mousePos.x,Input.mousePos.y,"yellow");
+      
+      //loop
+      setTimeout(function(){
+        GpuDraw.setup2();
+      }, 1000);
+      
+      let speed = 10;
+      let sprint;
+      let sprintKey;
+      
+      setInterval(function(){
+        //GpuDraw.setup2();
+      	time.deltaTime = (Date.now()-time.last)/10;
+      	time.last = Date.now();
+        //thing.innerHTML += "hi";
+      	fovIn = document.getElementById("fov").value;
+      	
+      	/*let fovIn = 100;
+        fovIn /= 2;
+        fovIn *= Math.PI/180;
+        fovIn = Math.tan(fovIn);*/
+        
+        //const fov = window.innerWidth/(2*fovIn);
+        
+        fov = fovCalc(fovIn);
+      	
+      	
+      	//Input.mousePos.y += window.innerHeight/2;
+      	if(input.mousePos.y>Math.PI*50){
+      	  input.mousePos.y = Math.PI*50;
+      	} else if(input.mousePos.y<Math.PI*(-50)){
+      	  input.mousePos.y = Math.PI*(-50);
+      	}
+      	//Input.mousePos.x += window.innerWidth/2;
+        //draw.clear();
+        
+        //player.id.innerHTML ="7";
+        /*if(Input.keyPress["a"]==true){
+          player.id.innerHTML = "a is presed";
+        }else{
+          player.id.innerHTML = "a is not presed";
+        }*/
+        const playerChange = new Vector3(0,0,0);
+        
+        
+        
+        if(input.keyPress("e")){
+          
+          if (!sprintKey){
+
+            sprintKey = true;
+            
+            if (speed == 1){
+              speed = 10;
+            } else {
+              speed = 1;
+            }
+          }
+        } else {
+          sprintKey = false;
+        }
+        
+        if(input.keyPress("ArrowUp")||input.keyPress("w")){
+          playerChange.z-= time.deltaTime/speed;
+          //player.id.innerHTML+="w";
+        }
+        if(input.keyPress("ArrowDown")||input.keyPress("s")){
+          playerChange.z+= time.deltaTime/speed;
+          //player.id.innerHTML+="s";
+        }
+        if(input.keyPress("ArrowLeft")||input.keyPress("a")){
+          playerChange.x-= time.deltaTime/speed;
+          //player.id.innerHTML+="a";
+        }
+        if(input.keyPress("ArrowRight")||input.keyPress("d")){
+          playerChange.x+= time.deltaTime/speed;
+          //player.id.innerHTML+="d";
+        }
+        
+        //player = vectorAdd(player, rotate(playerChange,0,(0-input.mousePos.x)/100,0));
+        
+        const x = Input.mousePos.y/100;
+				const y = Input.mousePos.x/100;
+				const z = 0;
+				
+				const xRotMatrix = [
+				  [1, 0, 0],
+				  [0, Math.cos(x), Math.sin(x)],
+				  [0, -Math.sin(x), Math.cos(x)]
+				];
+				const yRotMatrix = [
+				  [Math.cos(y), 0, Math.sin(y)],
+				  [0, 1, 0],
+				  [-Math.sin(y), 0, Math.cos(y)]
+				];
+				const zRotMatrix = [
+				  [Math.cos(z), Math.sin(z), 0],
+				  [-Math.sin(z), Math.cos(z), 0],
+				  [0, 0, 1]
+				];
+				
+				const fullRotMatrix = matrixMult(matrixMult(zRotMatrix, yRotMatrix), xRotMatrix);
+        
+        const playerMove = new Matrix(1,3);
+        
+        playerMove[0][0] = playerChange.x;
+        //playerMove[0][1] = playerChange.y;
+        playerMove[0][2] = playerChange.z;
+        
+        playerMat = matrixMult(playerMove, yRotMatrix);
+        
+        player.x += playerMat[0][0];
+        player.y += playerMat[0][1];
+        player.z += playerMat[0][2];
+        
+        if(input.keyPress("Shift")){
+        	player.y -= time.deltaTime/speed;
+        } else if(input.keyPress(" ")){
+        	player.y += time.deltaTime/speed;
+        }
+        
+        //const playerMod = rotate(player,(input.mousePos.y)/100,(input.mousePos.x)/100,0);
+        
+        
+        
+        //player.id.style.left = `${playerMod.x}px`;
+        //player.id.style.top = `${playerMod.y}px`;
+        /*player.x,player.y,*/
+        
+
+        
+        //Draw.triangle(0,0,player.x,player.z,Input.mousePos.x,Input.mousePos.y,"yellow");
+        
+        /*const renderTriangles = [];
+        
+        for(let tri of triangles){
+        	
+          const a = toPlayer(tri.a);
+          const b = toPlayer(tri.b);
+          const c = toPlayer(tri.c);
+          
+          const points = [a,b,c]
+          
+          let outOfBounds = 0;
+          
+          //checking wich points are behind the screen
+          for(let point of points){
+          	if(point.x <= 1){
+          		 outOfBounds++;
+          	}
+          }
+          
+          //console.log(outOfBounds);
+          
+          const newPoints = [];
+          const points2 = [];
+          
+          switch(outOfBounds){
+          	case(0):
+          		renderTriangles.push(new Triangle(a,b,c,tri.color));
+          		break;
+          		
+          	case(1):
+          		const outbounds = points.find(function(value){return(value.x <= 1);});
+          		
+          		
+          		
+          		for(let obj of points){
+          			if(obj != outbounds){
+          				const deltaX = obj.x - outbounds.x;
+	          			const deltaY = obj.y - outbounds.y;
+	          			const deltaZ = obj.z - outbounds.z;
+	          			
+	          			const newZ = ((deltaZ/deltaX)*((-outbounds.x)+1))+outbounds.z;
+	          			const newY = ((deltaY/deltaX)*((-outbounds.x)+1))+outbounds.y;
+	          			
+	          			newPoints.push(new Vector3(1,newY,newZ));
+	          			points2.push(obj)
+          			}
+          		}
+          		renderTriangles.push(new Triangle(points2[0],newPoints[0],newPoints[1],tri.color));
+          		renderTriangles.push(new Triangle(points2[0],points2[1],newPoints[1],tri.color));
+          		break;
+          		
+          	case(2):
+          		const inbounds = points.find(function(value){return(value.x > 1);});
+          		
+          		
+          		for(let obj of points){
+          			if(obj == inbounds){
+          				//break;
+          			} else {
+          			
+	          			const deltaX = obj.x - inbounds.x;
+	          			const deltaY = obj.y - inbounds.y;
+	          			const deltaZ = obj.z - inbounds.z;
+	          			
+	          			const newZ = ((deltaZ/deltaX)*((-inbounds.x)+1))+inbounds.z;
+	          			const newY = ((deltaY/deltaX)*((-inbounds.x)+1))+inbounds.y;
+	          			
+	          			newPoints.push(new Vector3(1,newY,newZ));
+          			}
+          		}
+          		
+          		renderTriangles.push(new Triangle(inbounds,newPoints[0],newPoints[1],tri.color));
+          		break;
+          }
+        }*/
+        
+        /*for(let tri of renderTriangles){
+        	const a = distanceTo(tri.a);
+        	const b = distanceTo(tri.b);
+        	const c = distanceTo(tri.c);
+        	
+        	const a = tri.a.x;
+        	const b = tri.b.x;
+        	const c = tri.c.x;
+        	
+        	const distance = (a+b+c)/3;
+        	
+        	tri.distance = distance; 
+        	//tri.color = `rgba(0,0,${distance%255},1)`;
+        }*/
+        
+        //mergSort(renderTriangles,0,21);
+        //renderTriangles.sort(function(a,b){return(b.distance-a.distance)})
+        
+        GpuDraw.render(triangles);
+        
+        /*for(let tri of renderTriangles){
+          
+          //let tri = renderTriangles[renderTriangles.length-5];
+          
+          const centerX = window.innerWidth/2;
+          const centerY = window.innerHeight/2;
+          
+          const a = toRender(tri.a);
+          const b = toRender(tri.b);
+          const c = toRender(tri.c);*/
+          
+          /*draw.triangle(
+            a.y+centerX,a.z+centerY,
+            b.y+centerX,b.z+centerY,
+            c.y+centerX,c.z+centerY,
+            tri.color
+          );
+          
+          draw.line(
+            a.y+centerX,a.z+centerY,
+            b.y+centerX,b.z+centerY,
+            "red",1000/tri.distance
+          );
+          draw.line(
+            a.y+centerX,a.z+centerY,
+            c.y+centerX,c.z+centerY,
+            "red",1000/tri.distance
+          );*/
+          /*draw.line(
+            c.y+centerX,c.z+centerY,
+            b.y+centerX,b.z+centerY,
+            "red",1000/tri.distance
+          );*/
+        //}
+        /*Draw.triangle(
+          proPoints[0].y+window.innerWidth/2,proPoints[0].z+window.innerHeight/2,
+          proPoints[1].y+window.innerWidth/2,proPoints[1].z+window.innerHeight/2,
+          proPoints[2].y+window.innerWidth/2,proPoints[2].z+window.innerHeight/2,
+          "blue"
+          );
+          Draw.triangle(
+          proPoints[3].y+window.innerWidth/2,proPoints[3].z+window.innerHeight/2,
+          proPoints[1].y+window.innerWidth/2,proPoints[1].z+window.innerHeight/2,
+          proPoints[2].y+window.innerWidth/2,proPoints[2].z+window.innerHeight/2,
+          "darkblue"
+          );
+          Draw.triangle(
+          proPoints[4].y+window.innerWidth/2,proPoints[4].z+window.innerHeight/2,
+          proPoints[3].y+window.innerWidth/2,proPoints[3].z+window.innerHeight/2,
+          proPoints[2].y+window.innerWidth/2,proPoints[2].z+window.innerHeight/2,
+          "red"
+          );
+          Draw.triangle(
+          proPoints[5].y+window.innerWidth/2,proPoints[5].z+window.innerHeight/2,
+          proPoints[4].y+window.innerWidth/2,proPoints[4].z+window.innerHeight/2,
+          proPoints[3].y+window.innerWidth/2,proPoints[3].z+window.innerHeight/2,
+          "darkred"
+          );*/
+        /*Draw.can.strokeStyle = "red";
+        Draw.can.lineWidth = 10; 
+        Draw.can.beginPath();
+        Draw.can.moveTo(0,0);
+        Draw.can.lineTo(100,100);
+        Draw.can.stroke();  */
+        
+        
+        
+        
+        //Draw.line(0,0,player.x,player.y,"red",10);
+        //Draw.line(0,0,Input.mousePos.x,Input.mousePos.y,"red",10);
+        //Draw.line(Input.mousePos.x,Input.mousePos.y,player.x,player.y,"red",10);
+        
+      }, 100);
+      
+      function rotate(pointIn, pitch, yaw, roll){
+      	
+      	const n = pointIn;
+      	
+      	const x1 = Math.cos(roll);
+      	const x2 = Math.cos(pitch);
+      	const x3 = Math.cos(yaw);
+      	
+      	const y1 = Math.sin(roll);
+      	const y2 = Math.sin(pitch);
+      	const y3 = Math.sin(yaw);
+      	
+      	const X = n.x*(x2*x3)
+      	+ n.y*(x2*y3)
+      	+ n.z*((-1)*y2);
+      	
+      	const Y = n.x*((y1*y2*x3)-(y3*x1))
+      	+ n.y*((y1*y2*y3)+(x3*x1))
+      	+ n.z*(x2*y1);
+      	
+      	const Z = n.x*((x1*y2*x3)+(y3*y1))
+      	+ n.y*((x1*y2*y3)-(x3*y1))
+      	+ n.z*(x1*x2);
+      	
+      	return({
+      		x:X,
+      		y:Y,
+      		z:Z
+      	});
+      }
+      
+      function Vector3(x,y,z){
+      	this.x = x;
+      	this.y = y;
+      	this.z = z;
+      }
+      
+      function vectorAdd(v1,v2){
+      	const v3 = new Vector3(0,0,0);
+      	
+      	v3.x = v1.x+v2.x;
+      	v3.y = v1.y+v2.y;
+      	v3.z = v1.z+v2.z;
+      	
+      	return(v3);
+      }
+      
+      function Triangle(a,b,c,color){
+      	this.a = a;
+      	this.b = b;
+      	this.c = c;
+      	this.color = color;
+      }
+      
+      function toPlayer(obj){
+        const obj2 = {
+      		x:obj.x,
+      		y:obj.y,
+      		z:obj.z
+      	};
+      	
+      	//let p2 = rotate(player,(Input.mousePos.y)/100,(Input.mousePos.x)/100,0);
+      	
+      	obj2.x -= player.x;
+      	obj2.y -= player.y;
+      	obj2.z -= player.z;
+      	
+      	const proPoint = rotate(obj2,(-input.mousePos.y)/100,(input.mousePos.x)/100,0);
+      	
+      	return(proPoint);
+      }
+      	
+      function toRender(obj){
+      	
+      	const offset = fov/obj.x;
+      	
+      	const proPoint = vectorAdd(obj, new Vector3(0,0,0));
+      	
+      	proPoint.y *= offset;
+      	proPoint.z *= offset;
+      	
+      	/*if(Math.sign(offset)== -1){
+      	  proPoint.y = 100000000;
+      	  proPoint.z = 100000000;
+      	}*/
+      	
+      	return(proPoint);
+      }
+      
+      function distanceTo(point){
+      	return(Math.sqrt((point.x**2) + (point.y**2) + (point.z**2)));
+      }
+      
+      function mergSort(list, min, max){
+      	if(min==max){
+      		return;
+      	}
+      	let midPoint = Math.floor( ((max-min)/2) ) + min;
+      	mergSort(list, min, midPoint);
+      	mergSort(list, midPoint+1, max);
+      	
+      	let a = min;
+      	let b = midPoint+1;
+      	
+      	while(a!=b && b<=max){
+      		if(list[a].distance < list[b].distance){
+      			let temp = list[a];
+      			list[a] = list[b];
+      			list[b] = temp;
+      			b++;
+      		} 
+      		a++;
+      		
+      	}
+      }
+    </script>
+  </body>
+</html>
