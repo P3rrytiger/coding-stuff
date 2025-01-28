@@ -1,0 +1,14 @@
+body{
+  background-color: #2e2e2e;
+}
+div{
+  position:absolute;
+  width:10px;
+  height:10px;
+  /*background-color: #00ab1f;*/
+}
+canvas{
+  position:absolute;
+  left:0;
+  top:0;
+}
