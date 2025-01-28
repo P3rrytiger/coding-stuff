@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>wow</title>
+    <link rel="stylesheet" type="text/css" href="a.css">
+    
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <div class="dot"></div>
+    <div class="dot" id="click"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    
+    <script>
+      let click = document.getElementById("click");
+      let microStep = 300;
+      let dot = document.getElementsByClassName("dot");
+      let dots = [];
+      let button=1;
+      let canvas = document.getElementsByTagName("canvas")[0];
+      let can = canvas.getContext('2d');
+      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+      canvas.position = "absolute";
+      bottom = 500;
+      bottomChange =1;
+      let lines = [];
+      let mousePos ={
+          x:0,
+          y:0
+      };
+      let lineColor = "rgba(241, 168, 0, 1)";  
+      //let lineColor = "rgba(241, 168, 0, 1)";  
+      
+      //add click detection
+      document.onmousemove = setMousePos;
+      document.onmousedown = setButton;
+      document.onmouseup = function(){button=1;};
+      function setMousePos(event){
+        mousePos ={
+          x:event.clientX,
+          y:event.clientY
+        };
+      }
+      function setButton(event){
+        button = event.button;
+      }
+      
+      for(i=0; i<dot.length;i++){
+        dots[i] = {
+          id:dot[i],
+          x:Math.random(),
+          y:Math.random(),
+          pvx:0,
+          pvy:0,
+          vx:0,
+          vy:0,
+          mass:10
+        };
+      }
+      
+      for(i=15;i<21;i++){
+        dots[15].mass = 1;
+      }
+      dots[21].mass = 50;
+      
+      createConections();
+      
+      for(iiii=0;iiii<20;iiii++){
+        loop2();
+        for(i=0; i<dots.length;i++){
+          n=dots[i];
+          
+          n.vx=0;
+          n.vy=0;
+        }
+      }
+      
+      setInterval(loop2, 10);
+      
+      function loop2(){
+        can.strokeStyle = "black"/*'#2e2e2e'*/;  
+        can.lineWidth = 500000; 
+        can.beginPath();
+        can.moveTo(0,0);
+        can.lineTo(canvas.width,canvas.height);
+        can.stroke();  
+        
+        can.lineWidth = 60; 
+        
+        for(ii=0;ii<=microStep;ii++){
+          loop();
+          can.lineWidth -= 60/microStep;
+          can.strokeStyle = `rgba(241, 168, 0, ${Math.abs((can.lineWidth/60)-1)/50})`;  
+        }
+        
+        if(bottom>900){
+          bottomChange = Math.abs(bottomChange)*(-1);
+        } else if(bottom<500){
+          bottomChange = Math.abs(bottomChange);
+        }
+        
+        bottom+=bottomChange;
+        
+        rayCast();
+      }
+      
+      function loop(){
+        for(i=0; i<dots.length;i++){
+          n=dots[i];
+          
+          n.vy+=(1/microStep);
+          
+          n.x+=n.vx/microStep;
+          n.y+=n.vy/microStep;
+          
+          n.id.style.left = `${n.x}px`;
+          n.id.style.top = `${n.y}px`;
+          
+          if(n.y>window.innerHeight-11){
+            n.vy=Math.abs(n.vy)* (-1);
+            
+            //n.vx/=1.5;
+            ang = Math.atan2(n.vy,n.vx);
+            //if(n.vx<0){ang+Math.PI;}
+            dist =  Math.sqrt((n.vx)**2+(n.vy)**2);
+            //dist /=1.1;
+            
+            ang-=Math.sign(n.vx)/10;
+            
+            n.vy = Math.sin(ang)*dist;
+            n.vx = Math.cos(ang)*dist;
+            
+          }else if(n.y<0){
+            n.vy= (n.vy*(Math.abs(n.vy)/n.vy));
+          }
+          if(n.x>window.innerWidth-11){
+            n.vx=(n.vx*(Math.abs(n.vx)/n.vx))* (-1);
+            
+            //n.vx/=2;
+          }else if(n.x<0){
+            n.vx= (n.vx*(Math.abs(n.vx)/n.vx));
+          }
+          
+          if(n.id==click){
+            if(button==0){
+              n.vx=((mousePos.x-(n.x))/10);
+              n.vy=((mousePos.y-(n.y))/10);
+            }
+              
+            
+          }
+          if(button==0){
+            n.vx/=1.0001;
+            n.vy/=1.0001;
+          }
+        }
+        
+        /*for(i=0;i<dots.length;i++){
+          for(iii=0;iii<dots.length;iii++){
+            conection(dots[i],dots[iii],100,5);
+          }
+        }*/
+        for(i=0;i<lines.length;i++){
+          n = lines[i];
+          conectionsCalc(n.oA, n.oB, n.dist, n.tension);
+        }
+      }
+      
+      function createConections(){
+        conection(dots[0],dots[1],500,2);
+        conection(dots[2],dots[1],500,2);
+        conection(dots[0],dots[2],/*bottom*/500,2);
+        
+        conection(dots[1],dots[15],50,500);
+        conection(dots[16],dots[15],50,500);
+        conection(dots[17],dots[16],50,500);
+        conection(dots[18],dots[17],50,500);
+        conection(dots[19],dots[18],50,500);
+        conection(dots[19],dots[20],50,500);
+        conection(dots[20],dots[21],50,500);
+        
+        //conection(dots[1],dots[18],30,5);
+
+        
+        conection(dots[0],dots[3],100,5);
+        conection(dots[0],dots[4],100,5);
+        conection(dots[0],dots[5],100,5);
+        conection(dots[0],dots[6],100,5);
+        conection(dots[0],dots[7],100,5);
+        conection(dots[0],dots[8],100,5);
+        
+        conection(dots[4],dots[3],100,5);
+        conection(dots[4],dots[5],100,5);
+        conection(dots[6],dots[5],100,5);
+        conection(dots[6],dots[7],100,5);
+        conection(dots[8],dots[7],100,5);
+        conection(dots[8],dots[3],100,5);
+        
+        conection(dots[6],dots[3],200,5);
+        conection(dots[7],dots[4],200,5);
+        conection(dots[8],dots[5],200,5);
+        
+        
+        conection(dots[2],dots[9],100,5);
+        conection(dots[2],dots[10],100,5);
+        conection(dots[2],dots[11],100,5);
+        conection(dots[2],dots[12],100,5);
+        conection(dots[2],dots[13],100,5);
+        conection(dots[2],dots[14],100,5);
+        
+        conection(dots[10],dots[9],100,5);
+        conection(dots[10],dots[11],100,5);
+        conection(dots[12],dots[11],100,5);
+        conection(dots[12],dots[13],100,5);
+        conection(dots[14],dots[13],100,5);
+        conection(dots[14],dots[9],100,5);
+        
+        conection(dots[12],dots[9],200,5);
+        conection(dots[13],dots[10],200,5);
+        conection(dots[14],dots[11],200,5);
+        
+        
+        conection(dots[21],dots[22],50,5);
+        conection(dots[21],dots[23],50,5);
+        conection(dots[21],dots[24],50,5);
+        conection(dots[21],dots[25],50,5);
+        conection(dots[21],dots[26],50,5);
+        conection(dots[21],dots[27],50,5);
+        
+        conection(dots[22],dots[23],50,5);
+        conection(dots[24],dots[23],50,5);
+        conection(dots[24],dots[25],50,5);
+        conection(dots[26],dots[25],50,5);
+        conection(dots[26],dots[27],50,5);
+        conection(dots[22],dots[27],50,5);
+        
+        conection(dots[22],dots[25],100,5);
+        conection(dots[23],dots[26],100,5);
+        conection(dots[24],dots[27],100,5);
+      }
+      
+      //set up conections aray
+      function conection(oAIn,oBIn,distIn,tensionIn){
+        lines[lines.length] = {
+          oA: oAIn,
+          oB: oBIn,
+          dist: distIn,
+          tension: tensionIn
+        }
+      }
+      
+      function conectionsCalc(oA,oB,dist,tension){
+        if(oA.id==oB.id){
+          return;
+        }
+        //tension = 2.1;
+        
+        //find curent dist
+        cDist= Math.sqrt((oB.x-oA.x)**2+(oB.y-oA.y)**2);
+        
+        oA.vx+=(((cDist-dist)/tension) * ((oB.x-oA.x)/cDist)) * (oB.mass/oA.mass+oB.mass);
+        oA.vy+=(((cDist-dist)/tension) * ((oB.y-oA.y)/cDist)) * (oB.mass/oA.mass+oB.mass);
+        
+        cDist= Math.sqrt((oA.x-oB.x)**2+(oA.y-oB.y)**2);
+        
+        oB.vx+=(((cDist-dist)/tension) * ((oA.x-oB.x)/cDist)) * (oA.mass/oA.mass+oB.mass);
+        oB.vy+=(((cDist-dist)/tension) * ((oA.y-oB.y)/cDist)) * (oA.mass/oA.mass+oB.mass);
+        
+        //drawLine(oA.x,oA.y, oB.x,oB.y, "black", 40);
+        
+        
+        
+      }
+      
+      function rayCast(){
+        
+        for(i=0;i<lines.length;i++){
+          n = lines[i];
+          drawLine(n.oA.x,n.oA.y, n.oB.x,n.oB.y, "#af5e00", 25);
+        }
+        for(i=0;i<lines.length;i++){
+          n = lines[i];
+          drawLine(n.oA.x,n.oA.y, n.oB.x,n.oB.y, "#af660a", 10);
+        }
+        
+        let dir = 0;
+        let x = 0;
+        let y = 0;
+        let vx = 0;
+        let vy = 0;
+        //dir+=Math.PI*0.0001;
+        for(index = 0;index<2;dir=Math.PI*index){
+          vx = (Math.cos(dir))*30;
+          vy = (Math.sin(dir))*30;
+          x = mousePos.x;
+          y = mousePos.y;
+          opasity = 0.1;
+          size = 100;
+          for(i=0;i<300;i++){
+            
+            drawLine(x,y, x+(vx), y+(vy), `rgba(255, 255, 255, ${opasity})`, size);
+            
+            for(ii=0;ii<lines.length;ii++){
+              n=lines[ii];
+              /*dotA=((n.oA.x-x)*vx)+((n.oA.y-y)*vy);
+              dotB=((n.oB.x-x)*vx)+((n.oB.y-y)*vy);
+              
+              if((dotA>0&&dotA<=10)||(dotB>0&&dotB<=10)){
+              
+                if(polorize(n.oA.y-y)==polorize(vy)&&polorize(n.oA.x-x)==polorize(vx)){
+                  if(n.oA.y-y>=(n.oA.x-x)*(vy/vx)){
+                    if(n.oB.y-y<=(n.oB.x-x)*(vy/vx)){
+                      opasity/=2;
+                    }
+                  } else if(n.oB.y-y>=(n.oB.x-x)*(vy/vx)){
+                    opasity/=2;
+                  }
+                }
+              }*/
+              dist1 = Math.atan2((n.oA.y-y),(n.oA.x-x));
+              dist2 = Math.atan2((n.oB.y-y),(n.oB.x-x));
+              if(Math.round(Math.abs(dist1-dist2)*1)==Math.round(1*Math.PI)){
+                opasity/=2;
+              }
+            }
+            
+            if(0>x+vx||x+vx>window.innerWidth||0>y+vy||y+vy>window.innerHeight){
+              
+              if(Math.abs(((((polorize(vx)+1)/2) *window.innerWidth)-x)/vx)/*-window.innerWidth*/ > Math.abs(((((polorize(vy)+1)/2) *window.innerHeight)-y)/vy)/*-window.innerHeight*/){
+                if(y+vy<0){
+                  n=(0-y)/vy;
+                  y+=n*vy;
+                  x+=n*vx;
+                  vy=Math.abs(vy);
+                }else{
+                  
+                  n=(window.innerHeight-y)/vy;
+                  y+=n*vy;
+                  x+=n*vx;
+                  vy=Math.abs(vy)*(-1);
+                }
+                
+              } else{
+                if(x+vx<0){
+                  n=(0-x)/vx;
+                  y+=n*vy;
+                  x+=n*vx;
+                  vx=Math.abs(vx);
+                }else{
+                  n=(window.innerWidth-x)/vx;
+                  y+=n*vy;
+                  x+=n*vx;
+                  vx=Math.abs(vx)*(-1);
+                }
+              }
+              dir=Math.atan2(vy,vx);
+              dir+=((Math.random()*2)-1)/100;
+              vx = (Math.cos(dir))*30;
+              vy = (Math.sin(dir))*30;
+              size+=100;
+              
+            }else{
+              x += vx;
+              y += vy;
+            }
+          }
+          
+          index+=2/20;
+        }
+        
+        
+      }
+      
+      function drawLine(x1, y1, x2, y2, color, width){
+        can.strokeStyle = color; 
+        can.lineWidth = width; 
+        can.beginPath();
+        can.moveTo(x1,y1);
+        can.lineTo(x2,y2);
+        can.stroke();  
+      }
+      
+      function polorize(b){
+    	  return (Math.abs(b)/b);
+      }
+    </script>
+  </body>
+</html>
