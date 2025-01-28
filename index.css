@@ -1,0 +1,46 @@
+body{
+  background-color: #2e2e2e;
+  font-family: "Cabin", sans-serif;
+  color:#2e8031;
+}
+h1,th{
+  color: #00ab1f;
+  
+}
+td,li{
+  color:#2e8031;
+}
+.move{
+  height: 100px;
+  width: 100px;
+  position: absolute;
+}
+table, td, th{
+  width:5px;
+  border:2px solid black;
+}
+.c{
+  position:absolute;
+  width: 100px;
+  height: 100px;
+}
+.c1{
+  background-color: #00ab1f;
+  top:0;
+  left:0;
+}
+.c2{
+  background-color: purple;
+  top:0;
+  right:0;
+}
+.c3{
+  background-color: orange;
+  bottom:0;
+  left:0;
+}
+.c4{
+  background-color: blue;
+  bottom:0;
+  right:0;
+}
